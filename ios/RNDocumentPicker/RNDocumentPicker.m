@@ -96,8 +96,12 @@ RCT_EXPORT_METHOD(show:(NSDictionary *)options
         [coordinator coordinateReadingItemAtURL:url options:NSFileCoordinatorReadingResolvesSymbolicLink error:&error byAccessor:^(NSURL *newURL) {
             NSMutableDictionary* result = [NSMutableDictionary dictionary];
 
-            [result setValue:newURL.absoluteString forKey:@"uri"];
-            [result setValue:[newURL lastPathComponent] forKey:@"fileName"];
+            NSURL *modifiedUrl = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:[newURL lastPathComponent]]];
+            if ( [[NSFileManager defaultManager] isReadableFileAtPath:url.path] ){
+                [[NSFileManager defaultManager] copyItemAtURL:url toURL:modifiedUrl error:nil];
+            }
+            [result setValue:modifiedUrl.absoluteString forKey:@"uri"];
+            [result setValue:[modifiedUrl lastPathComponent] forKey:@"fileName"];
 
             NSError *attributesError = nil;
             NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:newURL.path error:&attributesError];
